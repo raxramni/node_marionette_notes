@@ -1,0 +1,4 @@
+ul.list-group
+  each todo in items
+    li.list-group-item.text-center
+      a.todo-link(href="/"+todo.id, data-id=todo.id)=todo.title
