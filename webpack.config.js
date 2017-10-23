@@ -55,6 +55,7 @@ module.exports = [{
             { from: 'node_modules/backbone.marionette/lib/backbone.marionette.min.js.map', to: 'vendor' },
             { from: 'node_modules/backbone.stickit/backbone.stickit.js', to: 'vendor' },
             { from: 'node_modules/backbone.syphon/lib/backbone.syphon.js', to: 'vendor' },
+            { from: 'node_modules/backbone.validation/dist/backbone-validation.js', to: 'vendor' },
             { from: 'node_modules/bootstrap/dist/js/bootstrap.min.js', to: 'vendor' }
         ])
     ],

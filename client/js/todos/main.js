@@ -10,7 +10,18 @@ const showTemplate = require('../templates/todos/show.pug');
 
 //TodoApp.Todos = Backbone.Collection.extend({ model: TodoApp.Todo});
 
-TodoApp.Todo = Backbone.Model.extend({});
+TodoApp.Todo = Backbone.Model.extend({
+  validation: {
+    title:{
+      required: true
+    },
+    description: {
+      required: true
+    }
+  }
+});
+
+_.extend(TodoApp.Todo.prototype, Backbone.Validation.mixin);
 
 TodoApp.Todos = Backbone.Collection.extend({
   model: TodoApp.Todo
@@ -37,13 +48,38 @@ TodoApp.Form = Backbone.Marionette.View.extend({
   //onRender: function(){
   //  this.stickit();//null, this.bindings); 
   //}
-  events: {
-    'submit form': '_formSubmitted'
+  ui:{
+    form: 'form'
   },
-  _formSubmitted: function(){
+  events: {
+    'submit form': '_onFormSubmitted'
+  },
+  modelEvents: {
+    validated: '_onValidated'
+  },
+  reset: function(){
+    this.ui.form[0].reset();
+  },
+  onRender: function(){
+    Backbone.Validation.bind(this);
+  },
+  _onValidated: function(isValid, model, invalidAttrs){
+    for (let attr of _.keys(model.attributes).concat(_.keys(invalidAttrs))){
+      if (invalidAttrs[attr])
+        Backbone.Validation.callbacks.invalid(this, attr, invalidAttrs[attr], 'name');
+      else 
+        Backbone.Validation.callbacks.valid(this, attr, 'name');
+    }
+  },
+
+  _onFormSubmitted: function(e){
+    e.preventDefault();
+    e.stopPropagation();
     var data = Backbone.Syphon.serialize(this);
     this.model.set(data);
-    this.trigger('form:submitted');
+    if(this.model.isValid(true));
+      this.trigger('form:submitted');
+    //return false;
   }
 });
 
@@ -73,7 +109,6 @@ TodoApp.Controller = class extends Backbone.Marionette.Object {
     if(this.$el instanceof Backbone.Marionette.Region)
      this.$el.show(this.layout);
     else{
-      console.log(this.layout.el);
       this.$el.html(this.layout.el);
       this.layout.render().trigger('show');
     }
@@ -104,16 +139,19 @@ TodoApp.Controller = class extends Backbone.Marionette.Object {
 
   _onFormSubmit(){
     this.model.url = '/api/todos';
-    console.log(this.model, this.model.attributes);
-    Q(this.model.save()).done(this._fetchTodos.bind(this), this._fetchErrorHandler);
+    Q(this.model.save()).done(this._onSave.bind(this), this._fetchErrorHandler);
+  }
+
+  _onSave(){
+    this.model = new TodoApp.Todo()
+    this.formView.reset()
+    this._fetchTodos();
   }
 
   _onTodoClicked(context, e){
     const id = e.currentTarget.dataset.id;
     if(id){
-      console.log(id);
       this.todoModel = this.collection.get(id);
-      console.log(this.todoModel, this.collection);
       this._showTodo();
     }
   }

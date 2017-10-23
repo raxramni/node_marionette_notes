@@ -46,6 +46,7 @@
     "backbone.marionette": "3.4.4",
     "backbone.stickit": "0.9.2",
     "backbone.syphon": "0.7.0",
+    "backbone.validation": "0.7.1",
     "body-parser": "1.18.2",
     "bootstrap": "^3.3.7",
     "express": "^4.14.0",
